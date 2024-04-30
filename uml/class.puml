@@ -1,0 +1,137 @@
+@startuml
+
+top to bottom direction
+skinparam ranksep 20
+
+namespace Chip8Runtime {
+    interface "IROMParser" {
+        +load(rom): bool
+        +next_instruction(): Instruction
+    }
+
+
+    interface "Instruction" {
+        + execute(IRegister)
+    }
+
+
+    interface "IRegister" {
+        + get_available_registers()
+        + read_register(register)
+        + write_to_register(register, value)
+    }
+
+    interface "IStack" {
+        - limit: u8
+        + push()
+        + pop()
+        + top()
+        + is_full()
+        + is_empty()
+    }
+
+    interface "Runtime" {
+        - program_counter: u8
+        + get_program_counter_value(): u8
+        + execute_program()
+    }
+
+    interface "IInputDevice" {
+        + read()
+    }
+
+    interface "IBufferedOutputDevice" {
+        + write()
+        + clear()
+    }
+
+    interface "IStreamingOutputDevice" {
+        + write()
+    }
+
+    interface "ITimer" {
+        + tick()
+        + is_zero()
+    }
+
+    class "NoArgumentInstruction" {
+
+    }
+
+    class "ArgumentInstruction" {
+        args: Vec<u8>
+    }
+
+    namespace Instructions {
+        class "CLS"
+        class "RET"
+    }
+    
+}
+
+
+namespace x86 {
+    class "Display" {
+    }
+
+    class "Keyboard" {
+
+    }
+
+    class "HardwareTimer" {
+
+    }
+
+    class "MemoryHandler" {
+
+    }
+
+    class "ROMParser" {
+
+    }
+
+    class "Buzzer" {
+
+    }
+}
+
+namespace Hardware {
+    () ROM
+    () memory
+    () keyboard
+    () display
+    () sound
+}
+
+'Runtime inner connections
+"Instruction" -u- "IRegister"
+"Runtime" -u- "Instruction"
+"Runtime" -u- "IBufferedOutputDevice"
+
+"NoArgumentInstruction" -- "Instruction"
+"ArgumentInstruction" -- "Instruction"
+
+"CLS" <|-- "Instruction"
+"CLS" --> "Display"
+
+
+'Runtime to PC mapping
+
+"Display" <|-- "IBufferedOutputDevice"
+"Keyboard" <|-- "IInputDevice"
+"HardwareTimer" <|-- "ITimer"
+"MemoryHandler" <|-- "IRegister"
+"MemoryHandler" <|-- "IStack"
+"ROMParser" <|-- "IROMParser"
+"Buzzer" <|--"IStreamingOutputDevice"
+
+'PC to HW mapping
+"Keyboard" -u- "keyboard"
+"Display" -u- "display"
+"ROMParser" -u- "ROM"
+"MemoryHandler" -u- "memory"
+"Buzzer" -- "sound"
+
+
+
+@enduml
